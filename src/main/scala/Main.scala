@@ -10,14 +10,16 @@ import scopt.OParser
 object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = {
-
-    OParser.parse(parser, args, ArgConfig()) match {
-      case Some(args) => IO{
-        val path = args.downloadLocation.getOrElse("")
-        val fileName = args.filename.getOrElse(args.url.split("/").last)
-        new URL(args.url) #> new File(path + fileName) !!
-      }.as(ExitCode.Success)
-      case None => IO(System.err.println("Provide arguments")).as(ExitCode(2))
+    if (args.nonEmpty) {
+      OParser.parse(parser, args, ArgConfig()) match {
+        case Some(args) => IO {
+          val path = args.downloadLocation.getOrElse("")
+          val fileName = args.filename.getOrElse(args.url.split("/").last)
+          new URL(args.url) #> new File(path + fileName) !!
+        }.as(ExitCode.Success)
+        case None => IO(System.err.println("Wrong arguments")).as(ExitCode(2))
+      }
     }
+    else IO(System.err.println("Provide arguments")).as(ExitCode(2))
   }
 }
